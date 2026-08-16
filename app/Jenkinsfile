@@ -25,40 +25,41 @@ pipeline {
             }
         }
 
-       stage('Docker Push') {
-    steps {
-        withCredentials([
-            usernamePassword(
-                credentialsId: 'dockerhub-creds',
-                usernameVariable: 'DOCKER_USERNAME',
-                passwordVariable: 'DOCKER_PASSWORD'
-            )
-        ]) {
-            sh '''
-                echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-                docker push kusumlohar03/springboot-chat-app:latest
-                docker logout
-            '''
+        stage('Docker Push') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                        docker push kusumlohar03/springboot-chat-app:latest
+                        docker logout
+                    '''
+                }
+            }
         }
-    }
-}
 
         stage('Deploy') {
-    steps {
-        sh '''
-            docker pull kusumlohar03/springboot-chat-app:latest
+            steps {
+                sh '''
+                    docker pull kusumlohar03/springboot-chat-app:latest
 
-            docker stop chatapp || true
-            docker rm chatapp || true
+                    docker stop chatapp || true
+                    docker rm chatapp || true
 
-            docker run -d \
-                --name chatapp \
-                -p 8080:8080 \
-                --restart unless-stopped \
-                kusumlohar03/springboot-chat-app:latest
+                    docker run -d \
+                        --name chatapp \
+                        -p 8080:8080 \
+                        --restart unless-stopped \
+                        kusumlohar03/springboot-chat-app:latest
 
-            docker ps
-        '''
+                    docker ps
+                '''
+            }
+        }
     }
-}
 }
