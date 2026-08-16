@@ -44,9 +44,20 @@ pipeline {
 }
 
         stage('Deploy') {
-            steps {
-                echo 'Deployment will be configured next'
-            }
-        }
+    steps {
+        sh '''
+            docker pull kusumlohar03/springboot-chat-app:latest
+
+            docker stop chatapp || true
+            docker rm chatapp || true
+
+            docker run -d \
+                --name chatapp \
+                -p 8080:8080 \
+                --restart unless-stopped \
+                kusumlohar03/springboot-chat-app:latest
+
+            docker ps
+        '''
     }
 }
