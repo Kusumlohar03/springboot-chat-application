@@ -28,6 +28,12 @@
 			<input type="text" id="messageInput" class="form-control"
 				placeholder="Type a message" />
 
+		<button type="button" id="emojiBtn" class="btn mr-1">😊</button>
+			<emoji-picker id="emojiPicker"
+				style="display:none; width: 350px; height: 200px; overflow-y: auto;">
+			</emoji-picker>
+
+
 			<div id="input-group-append">
 				<button id="sendMessage" class="btn btn-primary">Send</button>
 			</div>
@@ -37,6 +43,28 @@
 </body>
 
 <script>
+
+//For Emojis
+	const emojiBtn = document.getElementById("emojiBtn");
+	const emojiPicker = document.getElementById("emojiPicker");
+	emojiBtn.addEventListener("click", () => {
+
+	    if (emojiPicker.style.display === "none") {
+	        emojiPicker.style.display = "block";
+	    } else {
+	        emojiPicker.style.display = "none";
+	    }
+	
+	});
+
+	emojiPicker.addEventListener("emoji-click", event => {
+	
+	    messageInput.value += event.detail.unicode;
+	
+	    messageInput.focus();
+	
+	});
+
 var stompClient = null;
 
 	function setConnected(connected){
