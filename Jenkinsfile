@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                echo 'Code checked out from GitHub'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('app') {
+                    sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                dir('app') {
+                    sh 'docker build -t kusumlohar03/springboot-chat-app:latest .'
+                }
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                        docker push kusumlohar03/springboot-chat-app:latest
+                        docker logout
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    docker pull kusumlohar03/springboot-chat-app:latest
+
+                    docker stop chatapp || true
+                    docker rm chatapp || true
+
+                    docker run -d \
+                        --name chatapp \
+                        -p 8080:8080 \
+                        --restart unless-stopped \
+                        kusumlohar03/springboot-chat-app:latest
+
+                    docker ps
+                '''
+            }
+        }
+    }
+}
+
